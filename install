@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # vefirewall
-# NS=https://github.com/taikedz/vefirewall
 
 CDEF='[0m'
 CRED='[1;31m'
@@ -11,21 +10,25 @@ CBLU='[1;34m'
 
 set -euo pipefail
 
-if [[ "$UID" = 0 ]]; then
+if [[ "$UID" != 0 ]]; then
 	echo "${CRED}You are not root$CDEF"
 	exit 127
 fi
 
 if [[ -f /usr/bin/vefirewall ]]; then
-	read -p "${CYEL}Are you sure you want to replace /usr/bin/vefirewall ?${CDEF}" RES
+	read -p "${CYEL}Are you sure you want to replace /usr/bin/vefirewall ? y/N ${CDEF}" RES
 	[[ $RES =~ y ]] && {
-		if [[ $(grep 'NS=https://github.com/taikedz/vefirewall' /usr/bin/vefirewall -c) -gt 0 ]]; then # redundant for now, I know.
+		if [[ $(grep 'NS=https://github.com/taikedz/vefirewall' /usr/bin/vefirewall -c) -gt 0 ]]; then
 			cp bin/vefirewall /usr/bin/
 		else
-			echo "${CRED}/usr/bin/firewall does not seem to be the program expected.\n\n${CYEL}Abort - inspect with 'diff bin/vefirewall /usr/bin/vefirewall | less'$CDEF" 1>&2
+			echo -e "${CRED}/usr/bin/firewall does not seem to be the program expected.\n\n${CYEL}Abort - inspect with 'diff bin/vefirewall /usr/bin/vefirewall | less'$CDEF" 1>&2
 			exit 126
 		fi
 	}
+elif [[ $(which vefirewall > /dev/null 2>&1 ; echo $?) -lt 0 ]]; then # exists elsewhere
+	echo "${CRED}$(which firewall) already exists$CDEF - remove it before continnuing"
+else
+	cp bin/vefirewall /usr/bin/
 fi
 
 # Part of install procedure.

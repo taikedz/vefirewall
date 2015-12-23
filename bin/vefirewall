@@ -1,4 +1,5 @@
 #! /bin/bash
+#NS=https://github.com/taikedz/vefirewall
 
 set -euo pipefail
 # IFS='\n\t' # do not accept space as value separator
