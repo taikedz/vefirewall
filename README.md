@@ -45,6 +45,11 @@ To-do list includes the following:
 	* sets of rules admins can switch between as required
 * Add chain-level policy
 	* allow the "inputs" and "outputs" files to specify their own policies
+* Add a "test" mode - allows you to configure new firewall, and recuperate if you are prone to messing up (based on a true story)
+	* runs a gnu-screen or tmux session
+	* saves old configuration
+	* applies new configuration
+	* reverts old configuration after N seconds
 * Save iptables configurations without external tool
 * Add non-interactive mode - for running in cron jobs.
 * Allow use in conjunction with other firewall managers:
