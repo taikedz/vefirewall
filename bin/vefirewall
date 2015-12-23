@@ -84,16 +84,6 @@ ${CYEL}--- IP Bans ---${CDEF}
 In the "banned" file you can list IP addresses and IP ranges
 to add INPUT ban rules for - these will ban connections, and
 cut existing connections when the rule is applied.
-
-${CGRN}=== Creating rules ===${CDEF}
-
-If the $CONFIG directory does not exist, vefirewall will not
-run. To create it, run '$0 --initialize'.
-
-If on initialization $CONFIG already exists, but any of the
-subfiles do not exist, NONE will be re-created or overwritten.
-You must remove $CONFIG directory altogether to use
-initialization.
 EOF
 }
 
@@ -128,9 +118,6 @@ case $arg in
 	--apply)
 		f_dryrun=n
 		;;
-	--initialize)
-		f_mkconfig=y
-		;;
 esac
 done
 
@@ -151,42 +138,6 @@ function setupban {
 	}
 }
 
-[[ "$f_mkconfig" = y ]] && (
-	[[ $(read -p "Are you sure you want to ${CRED}INITIALIZE${CDEF} the configs to DEFAULT VALUES? y/N> " RESP; echo "$RESP") = "y" ]]
-	) && {
-	mkdir -p "$CONFIG"
-	cat <<EOF > "$CONFIG/policy"
-# Lockdown policy - ACCEPT, REJECT, DROP
-DROP
-EOF
-	cat <<EOF > "$CONFIG/inputs"
-#22 # SSH port - enable for SSH
-
-#80 443 # Standard web ports
-
-EOF
-	cat <<EOF > "$CONFIG/outputs"
-22 # SSH
-53ut # DNS lookups - udp and tcp
-80 443 8080 # Some typical web host ports
-#3306 # MySQL/MariaDB requests - you may need to activate this even for local MySQL access
-143 993 # IMAP
-110 995 # POP3
-25 465 587 # SMTP
-#21 # FTP
-EOF
-
-	cat <<EOF > "$CONFIG/banned"
-# Add here IP addresses, or IP ranges, separated by spaces
-# Example:
-# 192.168.56.5
-# 10.178.3.4 10.178.3.5
-# 183.60.0.0-183.65.255.255
-EOF
-	chmod -R 700 "$CONFIG"
-
-	echo "${CRED}MAKE SURE$CBLU you configure initial $CONFIG/inputs file or no new connections will come in!$CDEF"
-}
 
 INPUTS="$( dumports inputs )"
 OUTPUTS="$( dumports outputs )"
