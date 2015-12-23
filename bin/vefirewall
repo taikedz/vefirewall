@@ -239,7 +239,7 @@ EOF
 
 # ============ TODO - clean up the following section. Solve the general case.
 
-if [[ -f /usr/bin/iptables-save ]]; then # Experimental - is there not something directly with iptables command?
+if [[ -f /sbin/iptables-save ]]; then
 	iptables-save  > /etc/iptables/rules.v4
 	ip6tables-save > /etc/iptables/rules.v6
 	echo "${CGRN}Saved rules.$CDEF"
