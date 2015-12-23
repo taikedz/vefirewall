@@ -1,0 +1,7 @@
+# List banned IPs and IP ranges
+
+# Example IP format:
+# 127.5.0.1
+
+# Example IP range format:
+# 192.168.56.0-192.168.56.255
