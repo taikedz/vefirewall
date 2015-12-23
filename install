@@ -31,5 +31,5 @@ else
 	cp bin/vefirewall /usr/bin/
 fi
 
-# Part of install procedure.
-/usr/bin/vefirewall --initialize
+cp -r examples/vefw /etc/
+chmod 744 /etc/vefw/{inputs,outputs,policy,banned}
