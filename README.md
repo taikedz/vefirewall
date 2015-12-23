@@ -8,11 +8,11 @@ And sometimes all you need is a hammer.
 
 Very Easy Firewall is an extremely simple firewall setup tool that allows you to configure some simple firewall rules and apply them. You don't need to content with firewalld syntax, ufw usage, or iptables expertise.
 
-You just need to know what ports to let input on, what ports to let output on, and what IPs you want to band.
+You just need to know what ports to allow input on, what ports to allow output on, and what IPs you want to ban.
 
 Simple.
 
-Of course, don't use this tool if you are using anything else to manage your firewall, like fail2ban or snort.
+(Of course, don't use this tool if you are using anything else to manage your firewall, like `fail2ban` or `snort`.)
 
 ## How to use it
 
@@ -25,7 +25,9 @@ There are four configuration files. Edit them as appropriate - see examples fold
 
 Finally, run `vefirewall` to see the rules ; run `vefirewall --apply` to apply them.
 
-## Simple overview
+![Example session](pics/session.png)
+
+## Simple run-down
 
 The Very Easy Firewall uses Linux `iptables` to control the firewall, and a set of configuration files
 
@@ -41,8 +43,12 @@ To-do list includes the following:
 
 * Add support for profiles
 	* sets of rules admins can switch between as required
-* Chain-level policy
+* Add chain-level policy
 	* allow the "inputs" and "outputs" files to specify their own policies
 * Save iptables configurations without external tool
-* Non-interactive mode - for running in cron jobs.
+* Add non-interactive mode - for running in cron jobs.
+* Allow use in conjunction with other firewall managers:
+	* Add support for firewalld and ufw
+	* Move rules to their own chains - vefwinput vefwoutput
+		* allow chains to specify post- or pre- loading
 
