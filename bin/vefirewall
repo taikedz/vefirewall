@@ -239,12 +239,12 @@ EOF
 
 # ============ TODO - clean up the following section. Solve the general case.
 
-if [[ -f /sbin/iptables-save ]]; then
-	iptables-save  > /etc/iptables/rules.v4
-	ip6tables-save > /etc/iptables/rules.v6
-	echo "${CGRN}Saved rules.$CDEF"
+#if [[ -f /sbin/iptables-save ]]; then
+#	iptables-save  > /etc/iptables/rules.v4
+#	ip6tables-save > /etc/iptables/rules.v6
+#	echo "${CGRN}Saved rules.$CDEF"
 
-elif [[ -f /usr/bin/apt-get ]]; then # checking for apt-get, if present presume Debian/Ubuntu and presence of iptables-persistent in repo
+if [[ -f /usr/bin/apt-get ]]; then # checking for apt-get, if present presume Debian/Ubuntu and presence of iptables-persistent in repo
 	if [[ "$(dpkg --get-selections | grep iptables-persistent | wc -l)" -lt 1 ]]; then
 		read -p "Install iptables-persistent? " RY
 		if [[ $RY =~ 'y' ]]; then
