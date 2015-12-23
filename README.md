@@ -1,5 +1,7 @@
 # Very Easy Firewall
 
+(C) Tai Kedzierski, under GPLv3 -- see [LICENSE](LICENSE) for details
+
 Sometimes you need surgical precision. Sometimes you need a versatile swiss-army-knife.
 
 And sometimes all you need is a hammer.
