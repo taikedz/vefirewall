@@ -1,6 +1,6 @@
 # Very Easy Firewall
 
-(C) Tai Kedzierski, under GPLv3 -- see [LICENSE](LICENSE) for details
+(C) 2015 Tai Kedzierski, under GPLv3 -- see [LICENSE](LICENSE) for details
 
 Sometimes you need surgical precision. Sometimes you need a versatile swiss-army-knife.
 
@@ -14,7 +14,8 @@ You just need to know what ports to allow input on, what ports to allow output o
 
 Simple.
 
-(Of course, don't use this tool if you are using anything else to manage your firewall, like `fail2ban` or `snort`.)
+(WARN: do NOT use this tool if you are using anything else to manage your firewall, like `fail2ban` or `snort`.
+Support for isolated rules management is being added, but not yet implemented.)
 
 ## How to use it
 
@@ -55,7 +56,6 @@ To-do list includes the following:
 * Save iptables configurations without external tool
 * Add non-interactive mode - for running in cron jobs.
 * Allow use in conjunction with other firewall managers:
-	* Add support for firewalld and ufw
-	* Move rules to their own chains - vefwinput vefwoutput
+	* Move rules to their own chains - vefwinput vefwoutput IN PROGRESS
 		* allow chains to specify post- or pre- loading
 
