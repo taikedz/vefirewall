@@ -8,7 +8,7 @@ And sometimes all you need is a hammer.
 
 ## What for
 
-Very Easy Firewall is an extremely simple firewall setup tool that allows you to configure some simple firewall rules and apply them. You don't need to content with firewalld syntax, ufw usage, or iptables expertise.
+Very Easy Firewall is an extremely simple firewall setup tool that allows you to configure some simple firewall rules and apply them. You don't need to contend with firewalld syntax, ufw usage, or iptables expertise.
 
 You just need to know what ports to allow input on, what ports to allow output on, and what IPs you want to ban.
 
@@ -48,7 +48,7 @@ To-do list includes the following:
 	* sets of rules admins can switch between as required
 * Add chain-level policy
 	* allow the "inputs" and "outputs" files to specify their own policies
-* Add a "test" mode - allows you to configure new firewall, and recuperate if you are prone to messing up (based on a true story)
+* Add a "test" mode - allows you to configure new firewall, and recuperate in case the rules terminate your SSH session (based on a true story)
 	* runs a gnu-screen or tmux session
 	* saves old configuration
 	* applies new configuration
