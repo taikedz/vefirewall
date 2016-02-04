@@ -106,7 +106,10 @@ function dumports {
 f_doreset=y
 f_dryrun=y
 f_mkconfig=n
-for arg in $@; do
+f_interactive=y
+f_silent=n
+while [[ -n "$@" ]]; do
+arg=$1; shift
 case $arg in
 	--noreset)
 		f_doreset=n
@@ -117,6 +120,12 @@ case $arg in
 		;;
 	--apply)
 		f_dryrun=n
+		;;
+	--batchmode|-b)
+		f_interactive=n
+		;;
+	--silent|-s)
+		f_silent=y
 		;;
 esac
 done
@@ -248,6 +257,7 @@ for fchain in INPUT OUTPUT FORWARD; do
 	iptables -P $fchain $POLICY
 done
 
+if [[ "$f_silent" = n ]]; then
 cat <<EOF
 $CRED
 Firewall locked down.
@@ -261,6 +271,7 @@ ${CYEL}Banned:
 $BANIP
 $CDEF
 EOF
+fi
 
 # ============ TODO - clean up the following section. Solve the general case.
 
@@ -269,19 +280,21 @@ EOF
 #	ip6tables-save > /etc/iptables/rules.v6
 #	echo "${CGRN}Saved rules.$CDEF"
 
-if [[ -f /usr/bin/apt-get ]]; then # checking for apt-get, if present presume Debian/Ubuntu and presence of iptables-persistent in repo
-	if [[ "$(dpkg --get-selections | grep iptables-persistent | wc -l)" -lt 1 ]]; then
-		read -p "Install iptables-persistent? " RY
-		if [[ $RY =~ 'y' ]]; then
-			apt-get install -yy iptables-persistent
+if [[ "$f_interactive" = y ]]; then # so far unless interactive we cannot save state
+	if [[ -f /usr/bin/apt-get ]]; then # checking for apt-get, if present presume Debian/Ubuntu and presence of iptables-persistent in repo
+		if [[ "$(dpkg --get-selections | grep iptables-persistent | wc -l)" -lt 1 ]]; then
+			read -p "Install iptables-persistent? " RY
+			if [[ $RY =~ 'y' ]]; then
+				apt-get install -yy iptables-persistent
+			fi
+		else
+			dpkg-reconfigure iptables-persistent # Debian/Ubuntu
 		fi
+	elif [[ -f /etc/redhat-release ]]; then
+		/sbin/service iptables save # RHEL/CentOS 6 and before
 	else
-		dpkg-reconfigure iptables-persistent # Debian/Ubuntu
+		cat <<EOF
+	Unknown save mechanism. Please consult a search engine to find out how to save iptables firewalls in your distribution.
+	EOF
 	fi
-elif [[ -f /etc/redhat-release ]]; then
-	/sbin/service iptables save # RHEL/CentOS 6 and before
-else
-	cat <<EOF
-Unknown save mechanism. Please consult a search engine to find out how to save iptables firewalls in your distribution.
-EOF
 fi
