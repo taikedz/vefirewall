@@ -6,6 +6,12 @@ Sometimes you need surgical precision. Sometimes you need a versatile swiss-army
 
 And sometimes all you need is a hammer.
 
+## Features
+
+* Configure ports to allow using simple text files
+* Configure IP bans in a file
+* Safety catch - reverts settings if you lose SSH connection after applying rules
+
 ## What for
 
 Very Easy Firewall is an extremely simple firewall setup tool that allows you to configure some simple firewall rules and apply them. You don't need to contend with firewalld syntax, ufw usage, or iptables expertise.
@@ -48,14 +54,8 @@ To-do list includes the following:
 	* sets of rules admins can switch between as required
 * Add chain-level policy
 	* allow the "inputs" and "outputs" files to specify their own policies
-* Add a "test" mode - allows you to configure new firewall, and recuperate in case the rules terminate your SSH session (based on a true story)
-	* runs a gnu-screen or tmux session
-	* saves old configuration
-	* applies new configuration
-	* reverts old configuration after N seconds
-* Save iptables configurations without external tool
-* Add non-interactive mode - for running in cron jobs.
+* Save iptables configurations across reboots without external tool
 * Allow use in conjunction with other firewall managers:
 	* Move rules to their own chains - vefwinput vefwoutput IN PROGRESS
 		* allow chains to specify post- or pre- loading
-
+* Support RHEL7
