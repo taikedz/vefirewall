@@ -19,7 +19,7 @@ CBLU="[0;34m"
 CONFIG="/etc/vefw" # New location.
 
 function showhelp {
-cat <<EOF 1>&2 && exit
+cat <<EOF 1>&2
 
 ${CBLU}==== Very Easy Firewall ====$CDEF
 
@@ -103,8 +103,6 @@ function dumports {
 [[ -f /etc/redhat-release ]] && [[ $( cat /etc/redhat-release | sed -r -e 's/^.*?release ([0-9]+).*$/\1/') = '7' ]] && { echo "RedHat/CentOS version 7 does not use iptables directly. Please use firewalld."; exit 1; }
 
 
-[[ $UID != 0 ]] && { echo "${CRED}You are not root$CDEF" 1>&2 ; exit 1 ; }
-
 f_doreset=y
 f_dryrun=y
 f_mkconfig=n
@@ -115,12 +113,15 @@ case $arg in
 		;;
 	--help)
 		showhelp
+		exit 0
 		;;
 	--apply)
 		f_dryrun=n
 		;;
 esac
 done
+
+[[ $UID != 0 ]] && { echo "${CRED}You are not root$CDEF" 1>&2 ; exit 1 ; }
 
 function banrange {
 	setupban
