@@ -313,12 +313,13 @@ fi
 #	echo "${CGRN}Saved rules.$CDEF"
 
 if [[ "$f_interactive" = y ]]; then # so far unless interactive we cannot save state
-	NONCE=$(echo "$INPUTS $OUTPUTS"|md5sum)
+	NONCE=$(echo "$INPUTS $OUTPUTS $POLICY"|md5sum)
 	NONCE=${NONCE:0:5}
 	set +e
 	read -t 10 -p "Type '$NONCE' now to confirm: " RES
 	if [[ ! "$RES" = "$NONCE" ]]; then
 		iptables-restore < "$TMPSAVE"
+		exit
 	else
 		rm "$TMPSAVE"
 	fi
@@ -338,7 +339,7 @@ if [[ "$f_interactive" = y ]]; then # so far unless interactive we cannot save s
 		/sbin/service iptables save # RHEL/CentOS 6 and before
 	else
 		cat <<EOF
-	Unknown save mechanism. Please consult a search engine to find out how to save iptables firewalls in your distribution.
-	EOF
+Unknown save mechanism. Please consult a search engine to find out how to save iptables firewalls in your distribution.
+EOF
 	fi
 fi
