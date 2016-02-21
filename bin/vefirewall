@@ -74,11 +74,11 @@ ${CYEL}--- Lockdown Policy ---${CDEF}
 
 Specify one uncommented line in "policy": this is the default policy
 to set once the firewall rules have been applied. Typically this
-will be one of
+will be either of
 
-* REJECT (explicitly reject connections)
 * DROP (silently drop connections)
 * ACCEPT (accept any incoming connection - ONLY FOR TESTING)
+	* A sub-policy of REJECT to be applied at the end of an accepting chain will eb implemented in future
 
 ${CYEL}--- IP Bans ---${CDEF}
 
@@ -121,7 +121,7 @@ function dumports {
 	if [[ -f "$CONFIG/$1" ]]; then
 		echo $(cat "$CONFIG/$1" | sed -r 's/#.+$//' )
 	else
-		echo "" # can't simply be silent....??
+		: # do nothing
 	fi
 }
 
@@ -199,10 +199,15 @@ function delrule { # delete rule from CHAIN that matches CPAT regex
 	fi
 }
 
-TMPSAVE="/tmp/iptables-$(date +"%F_%T")"
-touch "$TMPSAVE"
-chmod 600 "$TMPSAVE"
-iptables-save > "$TMPSAVE"
+if [[ "$f_interactive" = y ]] ; then
+	TMPSAVE="/tmp/iptables-$(date +"%F_%T")"
+	touch "$TMPSAVE"
+	chmod 600 "$TMPSAVE"
+	iptables-save > "$TMPSAVE"
+	echo "sleep 15 ; iptables-restore < \"$TMPSAVE\"" | bash &
+	rmjobid=$!
+	echo "Saved old IP state ; restoring in 15sec unless confirmation entered"
+fi
 
 INPUTS="$( dumports inputs )"
 OUTPUTS="$( dumports outputs )"
@@ -312,22 +317,25 @@ fi
 #	ip6tables-save > /etc/iptables/rules.v6
 #	echo "${CGRN}Saved rules.$CDEF"
 
-if [[ "$f_interactive" = y ]]; then # so far unless interactive we cannot save state
+if [[ "$f_interactive" = y ]]; then # FIXME - unless interactive we cannot save state
 	NONCE=$(echo "$INPUTS $OUTPUTS $POLICY"|md5sum)
 	NONCE=${NONCE:0:5}
 	set +e
+
 	read -t 10 -p "Type '$NONCE' now to confirm: " RES
-	if [[ ! "$RES" = "$NONCE" ]]; then
-		iptables-restore < "$TMPSAVE"
-		exit
-	else
+	if [[ "$RES" = "$NONCE" ]]; then
+		kill $rmjobid
 		rm "$TMPSAVE"
+	else
+		# wrong nonce
+		# do what?
+		exit
 	fi
 	set -e
 
 
 	if [[ -f /usr/bin/apt-get ]]; then # checking for apt-get, if present presume Debian/Ubuntu and presence of iptables-persistent in repo
-		if [[ "$(dpkg --get-selections | grep iptables-persistent | wc -l)" -lt 1 ]]; then
+		if [[ "$(dpkg --get-selections | grep iptables-persistent -c )" -lt 1 ]]; then
 			read -p "Install iptables-persistent? " RY
 			if [[ $RY =~ 'y' ]]; then
 				apt-get install -yy iptables-persistent
