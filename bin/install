@@ -31,5 +31,7 @@ else
 	cp bin/vefirewall /usr/bin/
 fi
 
-cp -i -r examples/vefw /etc/
-chmod 744 /etc/vefw/{inputs,outputs,policy,banned}
+if [[ ! -d /etc/vefw ]]; then
+	cp -i -r examples/vefw /etc/
+fi
+chmod 600 /etc/vefw/{inputs,outputs,policy,banned}
