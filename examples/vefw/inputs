@@ -1,6 +1,0 @@
-22 # SSH port - enable for SSH
-80 443 # Standard web ports
-53ut # DNS requests
-
-# Some extra ones
-#3306 # MySQL

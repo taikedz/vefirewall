@@ -26,12 +26,12 @@ if [[ -f /usr/bin/vefirewall ]]; then
 		fi
 	}
 elif [[ $(which vefirewall > /dev/null 2>&1 ; echo $?) -lt 0 ]]; then # exists elsewhere
-	echo "${CRED}$(which firewall) already exists$CDEF - remove it before continnuing"
+	echo "${CRED}$(which firewall) already exists$CDEF - remove it before continuing"
 else
 	cp bin/vefirewall /usr/bin/
 fi
 
 if [[ ! -d /etc/vefw ]]; then
-	cp -i -r examples/vefw /etc/
+	cp -i -r config /etc/vefw # might need to be more granular
 fi
-chmod 600 /etc/vefw/{inputs,outputs,policy,banned}
+chmod -R 660 /etc/vefw/

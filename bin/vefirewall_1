@@ -1,6 +1,5 @@
 #! /bin/bash
 #NS=https://github.com/taikedz/vefirewall
-RELEASEVER="2.0.0 Very Easy Firewall (C) Tai Kedzierski (alpha)"
 
 set -euo pipefail
 # IFS='\n\t' # do not accept space as value separator
@@ -145,10 +144,6 @@ case $arg in
 		;;
 	--help)
 		showhelp
-		exit 0
-		;;
-	--version)
-		echo "$RELEASEVER"
 		exit 0
 		;;
 	--apply)

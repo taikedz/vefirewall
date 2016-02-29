@@ -1,0 +1,84 @@
+#!/bin/bash
+
+set -u
+
+function faile {
+	echo "$@" 1>&2
+	exit 1
+}
+
+function sede {
+	TFILE=$1 ; shift
+	OPAT=$1 ; shift
+	NPAT=$1 ; shift
+	sed -r -e "s$OPAT$NPATg" -i "$TFILE"
+}
+
+RELEASEFILE=./release.cfg
+
+if [[ ! -f "$RELEASEFILE" ]]; then
+	faile "No releasefile $RELEASEFILE"
+fi
+
+NEWVERSION=
+FILETOPATCH=
+COMMENT=
+
+MODE=
+
+while [[ -n "$@" ]]; do
+	ARG="$1" ; shift
+
+	case "$ARG" in
+	-M)
+		MODE=major
+		;;
+	-m)
+		MODE=minor
+		;;
+	-b)
+		MODE=bugfix
+		;;
+	-c)
+		COMMENT="$1"
+		shift
+		;;
+	-f)
+		FILETOPATCH="$1"
+		shift
+		;;
+	esac
+done
+
+if [[ -n "$COMMENT" ]]; then
+	sede "$RELEASEFILE" '^COMMENT=.*' "COMMENT=\"$COMMENT\""
+fi
+
+source "$RELEASEFILE"
+
+case "$MODE" in
+major)
+	sede "$RELEASEFILE" "^MAJOR=.*" "MAJOR=$(( $MAJOR + 1 ))"
+	;;
+minor)
+	sede "$RELEASEFILE" "^MINOR=.*" "MINOR=$(( $MINOR + 1 ))"
+	;;
+bugfix)
+	sede "$RELEASEFILE" "^BUGFIX=.*" "BUGFIX=$(( $BUGFIX + 1 ))"
+	;;
+esac
+
+source "$RELEASEFILE"
+
+RELSTRING=$(echo "$MAJOR.$MINOR.$BUGFIX $COMMENT"|sed 's/"/'"''"'/')
+if [[ ! -f "$FILETOPATCH" ]]; then
+
+cat <<EOF
+Version info:
+
+$RELSTRING
+EOF
+
+else
+sede "$FILETOPATCH" "RELEASEVER=.*" "RELEASEVER=\"$RELSTRING\""
+fi
