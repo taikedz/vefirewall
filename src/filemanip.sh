@@ -29,3 +29,13 @@ function read_policies {
 
 	echo "$(sed "$policyidx,$((rulesidx-1)) p" -n "$TFILE" | grep -v -P '^(\s*#.*|\s*)$')"
 }
+
+function getpolicy {
+	local POLICYFILE="$POLICYDIR/$1.rules"
+
+	if [[ ! -f "$POLICYFILE" ]]; then
+		faile "No such policy $1"
+	fi
+
+	echo "$POLICYFILE"
+}
