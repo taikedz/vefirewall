@@ -1,13 +1,18 @@
+function rep_pass { echo "[32;1m$*[0m" ; }
+function rep_fail { echo "[31;1m$*[0m" ; }
+function rep_stat { echo "[33;1m$*[0m" ; }
+
+
 function testmatch {
 	local expected="$1" ; shift
 	local message="$1" ; shift
 
 	read
 	if [[ "$REPLY" = "$expected" ]]; then
-		echo "PASS $message"
+		rep_pass "PASS $message"
 	else
-		echo "FAIL $message"
-		echo "\\___ Got [$REPLY] instead of [$expected]"
+		rep_fail "FAIL $message"
+		rep_stat "\\___ Got [$REPLY] instead of [$expected]"
 	fi
 }
 
@@ -17,9 +22,9 @@ function testnomatch {
 
 	read
 	if [[ "$REPLY" != "$expected" ]]; then
-		echo "PASS $message"
+		rep_pass "PASS $message"
 	else
-		echo "FAIL $message"
-		echo "\\___ Got [$REPLY] which is [$expected]"
+		rep_fail "FAIL $message"
+		rep_stat "\\___ Got [$REPLY] indeed"
 	fi
 }
