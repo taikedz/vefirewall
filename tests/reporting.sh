@@ -25,6 +25,6 @@ function testnomatch {
 		rep_pass "PASS $message"
 	else
 		rep_fail "FAIL $message"
-		rep_stat "\\___ Got [$REPLY] indeed"
+		rep_stat "\\___ Should not have gotten [$REPLY]"
 	fi
 }
