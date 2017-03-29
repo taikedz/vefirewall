@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#%include argstore.sh bashout.sh
+
+set -euo pipefail
+
+allargs="$(args_store "$@")"
+
+# ---- TRACK VARS -----
+
+POLICYFILE="$(args_get "$allargs" "-f" 1)"
+allargs="$(args_remove "$allargs" "-f" 1)"
+
+# ----- File manip
+
+function read_rules {
+	local TFILE="$1"; shift
+
+	local rulesidx=$(egrep -n '^%Rules' -m 1 "$TFILE"|cut -d':' -f1)
+
+	if [[ -z "$rulesidx" ]]; then
+		faile "No rule section in $TFILE"
+	fi
+
+	local flen=$(wc -l "$TFILE"|cut -d' ' -f1)
+	local rules="$(sed "$rulesidx,$flen p" -n | grep -v -P '^(#.+|\s*)')"
+}
