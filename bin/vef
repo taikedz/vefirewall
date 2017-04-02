@@ -183,10 +183,10 @@ function applyset {
 
 	setrawrules "$SETDIR/rawpre"
 
-	applyfilesrules INPUT "$SETDIR/input"
+	applyfilerules INPUT "$SETDIR/input"
 	setpolicy INPUT "$(readpolicy "$SETDIR/input")"
 
-	applyfilesrules OUTPUT "$SETDIR/output"
+	applyfilerules OUTPUT "$SETDIR/output"
 	setpolicy OUTPUT "$(readpolicy "$SETDIR/output")"
 
 	setrawrules "$SETDIR/rawpost"
@@ -197,19 +197,28 @@ function applyset {
 function executeset {
 	local targetset="$1"
 
-	if [[ -d "$targetset" ]]; then
+	if issetdir "$targetset"; then
 		applyset "$targetset"
-	elif [[ -d "$GLOBALSETS/$targetset" ]]; then
+	elif issetdir "$GLOBALSETS/$targetset"; then
 		applyset "$GLOBALSETS/$targetset"
 	else
 		echo "Could not find set to apply." >&2
 	fi
 }
 
+function issetdir {
+	local theset "$1"
+	([[ -f "$theset/input" ]] && [[ -f "$theset/output" ]]) || return 1
+
+	([[ -n "$(readpolicy "$theset/input")" ]] && [[ -n "$(readpolicy "$theset/output")" ]]) || return 1
+
+	return 0
+}
+
 function listsets {
 	local theset=
 	for theset in "$GLOBALSETS"/*; do
-		if [[ -f "$theset/input" ]] || [[ -f "$theset/output" ]]; then
+		if issetdir "$theset"; then
 			echo -n "$theset "
 		fi
 	done
@@ -230,6 +239,7 @@ elif [[ "$1" = apply ]]; then
 	needroot
 	executeset "$2"
 elif [[ "$1" = list ]]; then
+	needroot
 	listsets
 else
 	echo "Unknown command [$1]" >&2
