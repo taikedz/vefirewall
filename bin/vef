@@ -116,7 +116,7 @@ function applychainrules {
 	fi
 
 	for portdef in "$@"; do
-		if [[ "$portdef" =~ $(echo "([0-9])([ut]*)") ]]; then
+		if [[ "$portdef" =~ $(echo "([0-9]+)([ut]*)") ]]; then
 			local port="${BASH_REMATCH[1]}"
 			local tlayers="${BASH_REMATCH[2]}"
 			
