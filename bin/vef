@@ -63,6 +63,8 @@ EOF
 
 GLOBALSETS=/etc/vefirewall/sets
 
+# --------- General firewall operations --------------
+
 function allowestablished {
 	iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 	iptables -A INPUT -p icmp -j ACCEPT
@@ -96,6 +98,20 @@ function allowport {
 	iptables -A "$CHAIN" -m state $interface --state NEW -p "$tlayer" --dport "$port" -j ACCEPT
 }
 
+function readreallines {
+	local TFILE="$1"
+
+	grep -P -v '^(\s*)(#.*)?$' "$TFILE" | sed -r 's/#.*$//'
+}
+
+function saveset {
+	local setpath="$1"
+
+	echo "$setpath" > /etc/vefirewall/activeset
+}
+
+# ----------- SSH assurance --------------
+
 function getsshport {
 	egrep '^Port' /etc/ssh/sshd_config |head -n 1|sed -r 's/^Port\s+//'
 }
@@ -106,6 +122,8 @@ function allowssh {
 		allowport INPUT tcp "$sshport"
 	fi
 }
+
+# ---------- Chain rules application --------------
 
 function applychainrules {
 	local CHAIN="$1"; shift
@@ -132,12 +150,6 @@ function applychainrules {
 	done
 }
 
-function readreallines {
-	local TFILE="$1"
-
-	grep -P -v '^(\s*)(#.*)?$' "$TFILE" | sed -r 's/#.*$//'
-}
-
 function applyfilerules {
 	local CHAIN="$1"
 	local RULEFILE="$2"
@@ -147,6 +159,8 @@ function applyfilerules {
 		applychainrules "$CHAIN" $inline # do not quote $inline
 	done
 }
+
+# ------ Policy R/W operations ------
 
 function readpolicy {
 	local TFILE="$1"
@@ -169,6 +183,8 @@ function setpolicy {
 	fi
 }
 
+# --------- Raw rules processing -------------
+
 function setrawrules {
 	local TFILE="$1"
 	local inline=
@@ -181,11 +197,7 @@ function setrawrules {
 	done
 }
 
-function saveset {
-	local setpath="$1"
-
-	echo "$setpath" > /etc/vefirewall/activeset
-}
+# ------- Set Application --------------
 
 function applyset {
 	local SETDIR="$1"
