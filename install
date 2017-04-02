@@ -10,4 +10,4 @@ chmod 755 /usr/local/bin/vef
 
 umask 177
 mkdir -p /etc/vefirewall/sets
-cp defaultset /etc/vefirewall/sets/
+cp default-sets/* /etc/vefirewall/sets/ -r
