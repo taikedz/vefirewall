@@ -1,5 +1,8 @@
 #%POLICY=DROP
 
+# mysql on the loopback only
+%lo 3306
+
 # Web servers
 #80 443
 
