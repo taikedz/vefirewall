@@ -77,7 +77,7 @@ function resetfirewall {
 	iptables -P INPUT ACCEPT
 	iptables -F
 
-	iptables -F -t nat PREROUTING
+	iptables -t nat -F PREROUTING
 }
 
 function allowport {
@@ -94,11 +94,14 @@ function allowport {
 }
 
 function getsshport {
-	egrep '^Port'|head -n 1|sed -r 's/^Port\s+//'
+	egrep '^Port' /etc/ssh/sshd_config |head -n 1|sed -r 's/^Port\s+//'
 }
 
 function allowssh {
-	allowport INPUT tcp "$(getsshport)"
+	local sshport="$(getsshport)"
+	if [[ -n "$sshport" ]]; then
+		allowport INPUT tcp "$sshport"
+	fi
 }
 
 function applychainrules {
@@ -111,7 +114,7 @@ function applychainrules {
 	fi
 
 	for portdef in "$@"; do
-		if [[ "$portdef" =~ $(echo "([0-9])([ut]*)") ]]
+		if [[ "$portdef" =~ $(echo "([0-9])([ut]*)") ]]; then
 			local port="${BASH_REMATCH[1]}"
 			local tlayers="${BASH_REMATCH[2]}"
 			
@@ -137,7 +140,7 @@ function applyfilerules {
 	local RULEFILE="$2"
 	local inline=
 
-	readreallines "$INFILE"|while read inline; do
+	readreallines "$RULEFILE"|while read inline; do
 		applychainrules "$CHAIN" $inline # do not quote $inline
 	done
 }
@@ -145,7 +148,9 @@ function applyfilerules {
 function readpolicy {
 	local TFILE="$1"
 
-	egrep '^#%POLICY=' "$TFILE" | sed -r 's/^#%POLICY=//'
+	if [[ -f "$TFILE" ]]; then
+		egrep '^#%POLICY=' "$TFILE" | sed -r 's/^#%POLICY=//'
+	fi
 }
 
 function setpolicy {
@@ -154,6 +159,8 @@ function setpolicy {
 
 	if [[ -n "$POLICY" ]] && [[ "$POLICY" =~ $(echo "ACCEPT|DROP") ]]; then
 		iptables -P "$CHAIN" "$POLICY"
+	elif [[ -z "$POLICY" ]]; then
+		: "No policy"
 	else
 		echo "Bad policy [$POLICY]" >&2
 	fi
@@ -207,7 +214,7 @@ function executeset {
 }
 
 function issetdir {
-	local theset "$1"
+	local theset="$1"
 	([[ -f "$theset/input" ]] && [[ -f "$theset/output" ]]) || return 1
 
 	([[ -n "$(readpolicy "$theset/input")" ]] && [[ -n "$(readpolicy "$theset/output")" ]]) || return 1
@@ -219,7 +226,7 @@ function listsets {
 	local theset=
 	for theset in "$GLOBALSETS"/*; do
 		if issetdir "$theset"; then
-			echo -n "$theset "
+			echo "${theset##*/}"
 		fi
 	done
 }
