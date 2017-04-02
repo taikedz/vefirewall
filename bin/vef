@@ -73,11 +73,13 @@ function allowestablished {
 }
 
 function resetfirewall {
+	iptables-save > "/etc/vefirewall/save-$(date +"$F$T")"
+
 	iptables -P OUTPUT ACCEPT
 	iptables -P INPUT ACCEPT
 	iptables -F
 
-	iptables -t nat -F PREROUTING
+	iptables -t nat -F
 }
 
 function allowport {
