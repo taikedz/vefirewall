@@ -73,7 +73,8 @@ function allowestablished {
 }
 
 function resetfirewall {
-	iptables-save > "/etc/vefirewall/save-$(date +"$F$T")"
+	mkdir -p /etc/vefirewall/oldrules
+	iptables-save > "/etc/vefirewall/oldrules/save-$(date +"%F%T")"
 
 	iptables -P OUTPUT ACCEPT
 	iptables -P INPUT ACCEPT
@@ -180,6 +181,12 @@ function setrawrules {
 	done
 }
 
+function saveset {
+	local setpath="$1"
+
+	echo "$setpath" > /etc/vefirewall/activeset
+}
+
 function applyset {
 	local SETDIR="$1"
 	
@@ -206,13 +213,14 @@ function applyset {
 function executeset {
 	local targetset="$1"
 
-	if issetdir "$targetset"; then
-		applyset "$targetset"
-	elif issetdir "$GLOBALSETS/$targetset"; then
+	if issetdir "$GLOBALSETS/$targetset"; then
 		applyset "$GLOBALSETS/$targetset"
 	else
 		echo "Could not find set to apply." >&2
+		exit 1
 	fi
+
+	saveset "$targetset"
 }
 
 function issetdir {

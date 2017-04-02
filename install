@@ -5,8 +5,12 @@ if [[ "$UID" != 0 ]]; then
 	exit 1
 fi
 
+umask 022
+
 cp bin/vef /usr/local/bin/vef
-chmod 755 /usr/local/bin/vef
+cp {pkg,}/var/lib/vefirewall/vef-restore
+cp {pkg,}/etc/systemd/system/vef.service
+
 
 umask 177
 mkdir -p /etc/vefirewall/sets
