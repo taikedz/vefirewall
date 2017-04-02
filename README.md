@@ -11,7 +11,7 @@ Installing is very simple:
 
 	git clone https://github.com/taikedz/vefirewall
 	cd vefirewall
-	git check v2.0
+	git checkout v2.0
 	sudo ./install
 
 And you're done.
