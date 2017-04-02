@@ -12,4 +12,4 @@
 # LXC example
 # Add a similar rule to expose a container
 # The following exposes the container's port 80 via the host's port 8080
-#iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 8080 -j DNAT --to-destination 10.0.3.70:80
+#-t nat -A PREROUTING -i eth0 -p tcp --dport 8080 -j DNAT --to-destination 10.0.3.70:80
