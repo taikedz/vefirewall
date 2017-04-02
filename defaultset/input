@@ -1,0 +1,7 @@
+#%POLICY=DROP
+
+# Web servers
+#80 443
+
+# SMTP
+#25
