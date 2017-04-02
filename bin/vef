@@ -27,8 +27,11 @@ the flow direction -- for example, an input file could look like this:
 
 	#%POLICY=DROP
 
-	# Normal HTTP traffic
+	# Normal HTTP traffic on any interface
 	80 443
+
+	# Accept alt web on some internal interface eth2 only
+	%eth2 8080
 
 	# Minetest
 	30000u
@@ -81,7 +84,13 @@ function allowport {
 	local CHAIN="$1"
 	local tlayer="$2"
 	local port="$3"
-	iptables -A "$CHAIN" -m state --state NEW -p "$tlayer" --dport "$port" -j ACCEPT
+	local interface="$4"
+
+	if [[ -n "$interface" ]]; then
+		interface="-i $interface"
+	fi
+
+	iptables -A "$CHAIN" -m state $interface --state NEW -p "$tlayer" --dport "$port" -j ACCEPT
 }
 
 function getsshport {
@@ -94,6 +103,12 @@ function allowssh {
 
 function applychainrules {
 	local CHAIN="$1"; shift
+	local INTERFACE=
+
+	if [[ "$1" =~ ^% ]]; then
+		INTERFACE="${1:1}"
+		shift
+	fi
 
 	for portdef in "$@"; do
 		if [[ "$portdef" =~ $(echo "([0-9])([ut]*)") ]]
@@ -101,11 +116,11 @@ function applychainrules {
 			local tlayers="${BASH_REMATCH[2]}"
 			
 			if [[ "$tlayers" =~ t ]]; then
-				allowport "$CHAIN" tcp "$port"
+				allowport "$CHAIN" tcp "$port" "$INTERFACE"
 			fi
 			
 			if [[ "$tlayers" =~ u ]]; then
-				allowport "$CHAIN" udp "$port"
+				allowport "$CHAIN" udp "$port" "$INTERFACE"
 			fi
 		fi
 	done
