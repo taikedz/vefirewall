@@ -1,0 +1,5 @@
+#%POLICY=DROP
+
+# LXC
+# Ensure DNS lookups etc come back!
+%lxcbr0 53ut 67ut

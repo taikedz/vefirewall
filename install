@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ "$UID" != 0 ]]; then
+	echo "You must be root to run this script"
+	exit 1
+fi
+
+cp bin/vef /usr/local/bin/vef
+chmod 755 /usr/local/bin/vef
+
+umask 177
+mkdir -p /etc/vefirewall/sets
+cp default-sets/* /etc/vefirewall/sets/ -r

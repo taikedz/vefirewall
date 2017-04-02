@@ -1,61 +1,69 @@
-# Very Easy Firewall
+# Very Easy Firewall v2
 
-(C) 2015 Tai Kedzierski, under GPLv3 -- see [LICENSE](LICENSE) for details
+A very basic firewalling script that allows you to manage sets of rule files
+and apply them as needed.
 
-Sometimes you need surgical precision. Sometimes you need a versatile swiss-army-knife.
+**Do NOT use vefirewall in conjunction with other firewall management tools.**
 
-And sometimes all you need is a hammer.
+--- Installing ---
 
-## Features
+Installing is very simple:
 
-* Configure ports to allow using simple text files
-* Configure IP bans in a file
-* Safety catch - reverts settings if you lose SSH connection after applying rules
+	git clone https://github.com/taikedz/vefirewall
+	cd vefirewall
+	git checkout v2.0
+	sudo ./install
 
-## What for
+And you're done.
 
-Very Easy Firewall is an extremely simple firewall setup tool that allows you to configure some simple firewall rules and apply them. You don't need to contend with firewalld syntax, ufw usage, or iptables expertise.
+--- Usage ---
 
-You just need to know what ports to allow input on, what ports to allow output on, and what IPs you want to ban.
+	vef list
+	vef apply SETNAME
 
-Simple.
+SETNAME is the name of a set directory in /etc/vefirewall/sets, or an explicit
+path to a set directory.
 
-(WARN: do NOT use this tool if you are using anything else to manage your firewall, like `fail2ban` or `snort`.
-Support for isolated rules management is being added, but not yet implemented.)
+--- Sets ---
 
-## How to use it
+You can define sets in /etc/vefirewall/sets , or save them anywhere you wish.
 
-There are four configuration files. Edit them as appropriate - see examples folder for an idea. They are really very simple.
+A set is a folder consisting of at least two files, "input" and "output"
 
-* `/etc/vefw/inputs` - Specify a list of port numbers to let traffic out on
-* `/etc/vefw/outputs` - Specify a list of port numbers to let traffic in on
-* `/etc/vefw/policy` - Specify the policy - DROP or REJECT (or ACCEPT *if* you are testing!)
-* `/etc/vefw/banned` - Specify IP addresses, IP ranges, and domain names you want to block traffic coming from
+Each "input" and "output" file can list any number of port specifications,
+and allow empty lines and comment lines. Each also spciy the policy for
+the flow direction -- for example, an input file could look like this:
 
-Finally, run `vefirewall` to see the rules ; run `vefirewall --apply` to apply them.
+	#%POLICY=DROP
 
-![Example session](pics/session.png)
+	# Normal HTTP traffic on any interface
+	80 443
 
-## Simple run-down
+	# Accept alt web on some internal interface eth2 only
+	%eth2 8080
 
-The Very Easy Firewall uses Linux `iptables` to control the firewall, and a set of configuration files
+	# Minetest
+	30000u
 
-The default policy is set to DROP. All you need to do is add port specifications to the "inputs" and "outputs" files.
+Note the Minetest port, which expects UDP traffic, denoted by a "u". The default
+assignment is to TCP, but ports can also be specified for both:
 
-You also have a single file, listing banned IP addresses and IP ranges, and you can configure any program to simply write to the "banned" list to have them banned when next vefirewall is run.
+	5000ut # opens port 5000 for both UDP and TCP traffic
 
-The banning chain is the first rule loaded to INPUTS, before even letting "ESTABLISHED"/"RELATED" rules through.
+Another file, "forward" is available to specify the policy for the FORWARD chain.
 
-## TODO
+Two other files are available are "rawpre" and "rawpost". These allow you to apply
+rules before, and after, the input and output files are processed. These files simply
+contain raw arguments to iptables. For example, you may have this in your rawpre file:
 
-To-do list includes the following:
+	-t nat PREROUTING -p tcp -i eth1 --dport 8080 -j DNAT --to-destination 192.168.56.5:80
 
-* Add support for profiles
-	* sets of rules admins can switch between as required
-* Add chain-level policy
-	* allow the "inputs" and "outputs" files to specify their own policies
-* Save iptables configurations across reboots without external tool
-* Allow use in conjunction with other firewall managers:
-	* Move rules to their own chains - vefwinput vefwoutput IN PROGRESS
-		* allow chains to specify post- or pre- loading
-* Support RHEL7
+to perform some port forwarding from the host's port 8080 to some internal server on port 80.
+
+--- SSH ---
+
+By default, the port of the SSH daemon is detected and added to the
+allowed incoming ports. To cancel this behaviour, set the NOSSH variable:
+
+	NOSSH=true vef apply default
+
