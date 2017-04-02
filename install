@@ -11,7 +11,13 @@ cp bin/vef /usr/local/bin/vef
 cp {pkg,}/var/lib/vefirewall/vef-restore
 cp {pkg,}/etc/systemd/system/vef.service
 
+systemctl daemon-reload
 
 umask 177
 mkdir -p /etc/vefirewall/sets
 cp default-sets/* /etc/vefirewall/sets/ -r
+
+echo "Very Easy Firewall is now installed."
+echo "Enable auto-restore of rules on startup:"
+echo "	systemctl enable vef"
+echo "See rules in /etc/vefirewall/sets"
