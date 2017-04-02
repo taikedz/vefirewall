@@ -1,10 +1,5 @@
 #%POLICY=DROP
 
-# mysql on the loopback only
-%lo 3306
-
-# Web servers
-#80 443
-
-# SMTP
-#25
+# LXC
+# Ensure DNS lookups etc come back!
+%lxcbr0 53ut 67ut

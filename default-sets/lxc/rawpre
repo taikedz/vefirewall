@@ -1,0 +1,4 @@
+# Rules for the LXC bridge
+
+-A FORWARD -o lxcbr0 -j ACCEPT
+-A FORWARD -i lxcbr0 -j ACCEPT
