@@ -36,8 +36,11 @@ the flow direction -- for example, an input file could look like this:
 
 	#%POLICY=DROP
 
-	# Normal HTTP traffic
+	# Normal HTTP traffic on any interface
 	80 443
+
+	# Accept alt web on some internal interface eth2 only
+	%eth2 8080
 
 	# Minetest
 	30000u
