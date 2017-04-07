@@ -4,6 +4,13 @@ A very basic firewalling script that allows you to manage sets of rule files and
 
 **Do NOT use vefirewall in conjunction with other firewall management tools.**
 
+Features:
+
+* firewall-set rules are freshly applied at startup
+* configure the firewall with simple lists of ports
+* add raw rules too!
+* actively seeks to maintain and allow SSH connection - no more accidental drops when configuring remote servers!
+
 ## Install
 
 Installing is very simple:
@@ -67,17 +74,11 @@ Two other files are available are "rawpre" and "rawpost". These allow you to app
 
 to perform some port forwarding from the host's port 8080 to some internal server on port 80.
 
-## SSH
-
-By default, the port of the SSH daemon is detected and added to the allowed incoming ports. To cancel this behaviour, set the NOSSH variable:
-
-	NOSSH=true vef apply default
-
 ## Pre-configured sets
 
 VEFirewall comes with a few sets pre-configured:
 
-* `default` which should satisfy a general use-case
+* `basic` which should satisfy a general use-case, locking down incoming ports
 * `lxc` which sets up the correct forwarding parameters for exposing containers; examples of exposure code are in the raw files
 * `lockdown` which closes everything except the active SSH port
 * `open-unsafe` which simply opens up the firewall completely

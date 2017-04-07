@@ -34,8 +34,19 @@ By default, the port of the SSH daemon is detected and added to the allowed inco
 
 Example:
 
-	NOSSH=true vef apply default
+	sudo NOSSH=true vef apply default
 
+## Firewall startup
+
+Enable vef on startup by using:
+
+	sudo systemctl enable vef
+
+Any time you invoke `vef apply`, the newly applied firewall set is saved as the latest set.
+
+To not save the new set, use
+
+	sudo NOSAVE=true vef apply SETNAME
 
 
 EOF
@@ -161,12 +172,6 @@ function setrawrules {
 	done
 }
 
-function saveset {
-	local setpath="$1"
-
-	echo "$setpath" > /etc/vefirewall/activeset
-}
-
 function applyset {
 	local SETDIR="$1"
 	
@@ -200,11 +205,14 @@ function executeset {
 		exit 1
 	fi
 
-	saveset "$targetset"
+	echo "Done."
 }
 
 function saveset {
-	echo "$1" > /etc/vefirewall/savedset
+	if [[ "${NOSAVE}" != true ]]; then
+		echo "$1" > /etc/vefirewall/savedset
+		echo "Set saved."
+	fi
 }
 
 function issetdir {
