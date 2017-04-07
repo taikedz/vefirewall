@@ -203,6 +203,10 @@ function executeset {
 	saveset "$targetset"
 }
 
+function saveset {
+	echo "$1" > /etc/vefirewall/savedset
+}
+
 function issetdir {
 	local theset="$1"
 	([[ -f "$theset/input" ]] && [[ -f "$theset/output" ]]) || return 1
@@ -234,7 +238,7 @@ if [[ -z "$*" ]]; then
 	printhelp
 elif [[ "$1" = apply ]]; then
 	needroot
-	executeset "$2"
+	executeset "$2" && saveset "$2"
 elif [[ "$1" = list ]]; then
 	needroot
 	listsets
