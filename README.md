@@ -51,7 +51,9 @@ For example, an input file could look like this:
 	# DNS packets
 	53ut
 
-Note the DNS port, which expects UDP traffic, denoted by a "u" attached to the end. It is also possible to specify both TCP and UDP on a port:
+Note the opening of port 8080, which is only done for traffic coming in on interface `eth2`.
+
+Note also the DNS port, which expects UDP traffic, denoted by a "u" attached to the end. It is also possible to specify both TCP and UDP on a port:
 
 	5000ut
 
