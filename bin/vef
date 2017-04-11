@@ -2,28 +2,20 @@
 
 function printhelp {
 cat <<'EOF'
--- vef - the Very Easy Firewall --
+Very Easy Firewall - vef
 
-A very basic firewalling script that allows you to manage sets of rule files
-and apply them as needed.
+A very basic firewalling script that allows you to manage sets of rule files and apply them as needed.
 
---- Usage ---
+USAGE
 
 	vef list
 	vef apply SETNAME
 
-SETNAME is the name of a set directory in /etc/vefirewall/sets, or an explicit
-path to a set directory.
+SETNAME is the name of a set directory in /etc/vefirewall/sets
 
---- Sets ---
+## Sets
 
-You can define sets in /etc/vefirewall/sets , or save them anywhere you wish.
-
-A set is a folder consisting of at least two files, "input" and "output"
-
-Each "input" and "output" file can list any number of port specifications,
-and allow empty lines and comment lines. Each also spciy the policy for
-the flow direction -- for example, an input file could look like this:
+Example `input` set file
 
 	#%POLICY=DROP
 
@@ -33,30 +25,29 @@ the flow direction -- for example, an input file could look like this:
 	# Accept alt web on some internal interface eth2 only
 	%eth2 8080
 
-	# Minetest
-	30000u
+	# DNS packets
+	53ut
 
-Note the Minetest port, which expects UDP traffic, denoted by a "u". The default
-assignment is to TCP, but ports can also be specified for both:
+## SSH
 
-	5000ut # opens port 5000 for both UDP and TCP traffic
+By default, the port of the SSH daemon is detected and added to the allowed incoming ports. To cancel this behaviour, set the NOSSH variable:
 
-Another file, "forward" is available to specify the policy for the FORWARD chain.
+Example:
 
-Two other files are available are "rawpre" and "rawpost". These allow you to apply
-rules before, and after, the input and output files are processed. These files simply
-contain raw arguments to iptables. For example, you may have this in your rawpre file:
+	sudo NOSSH=true vef apply default
 
-	-t nat PREROUTING -p tcp -i eth1 --dport 8080 -j DNAT --to-destination 192.168.56.5:80
+## Firewall startup
 
-to perform some port forwarding from the host's port 8080 to some internal server on port 80.
+Enable vef on startup by using:
 
---- SSH ---
+	sudo systemctl enable vef
 
-By default, the port of the SSH daemon is detected and added to the
-allowed incoming ports. To cancel this behaviour, set the NOSSH variable:
+Any time you invoke `vef apply`, the newly applied firewall set is saved as the latest set.
 
-	NOSSH=true vef apply default
+To not save the new set, use
+
+	sudo NOSAVE=true vef apply SETNAME
+
 
 EOF
 }
@@ -232,7 +223,14 @@ function executeset {
 		exit 1
 	fi
 
-	saveset "$targetset"
+	echo "Done."
+}
+
+function saveset {
+	if [[ "${NOSAVE}" != true ]]; then
+		echo "$1" > /etc/vefirewall/savedset
+		echo "Set saved."
+	fi
 }
 
 function issetdir {
@@ -266,7 +264,7 @@ if [[ -z "$*" ]]; then
 	printhelp
 elif [[ "$1" = apply ]]; then
 	needroot
-	executeset "$2"
+	executeset "$2" && saveset "$2"
 elif [[ "$1" = list ]]; then
 	needroot
 	listsets
