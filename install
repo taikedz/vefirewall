@@ -5,20 +5,38 @@ if [[ "$UID" != 0 ]]; then
 	exit 1
 fi
 
+# --- The actual service
+
 umask 022
 
 cp bin/vef /usr/local/bin/vef
+
 mkdir /var/lib/vefirewall
 cp {pkg,}/var/lib/vefirewall/vef-restore
 cp {pkg,}/etc/systemd/system/vef.service
 
 systemctl daemon-reload
 
-umask 177
-mkdir -p /etc/vefirewall/sets
-cp default-sets/* /etc/vefirewall/sets/ -r
+# --- User-oriented data
 
-echo "Very Easy Firewall is now installed."
-echo "Enable auto-restore of rules on startup:"
-echo "	systemctl enable vef"
-echo "See rules in /etc/vefirewall/sets"
+# Don't squash sets on update
+if [[ ! -d /etc/vefirewall/sets ]] || [[ "$*" =~ --restore-sets ]]; then
+	umask 177
+	mkdir -p /etc/vefirewall/sets
+	cp default-sets/* /etc/vefirewall/sets/ -r
+fi
+
+# --- Final help
+
+cat <<'EOF'
+Very Easy Firewall is now installed!
+
+Enable auto-restore of rules on startup:
+
+	sudo systemctl enable vef
+
+Adapt a rule set in /etc/vefirewall/sets and then run
+
+	sudo vef apply RULENAME
+
+EOF
