@@ -11,7 +11,7 @@ umask 022
 
 cp bin/vef /usr/local/bin/vef
 
-mkdir /var/lib/vefirewall
+mkdir /var/lib/vefirewall -p
 cp {pkg,}/var/lib/vefirewall/vef-restore
 cp {pkg,}/etc/systemd/system/vef.service
 
