@@ -139,7 +139,7 @@ function applychainrules {
 			local port="${BASH_REMATCH[1]}"
 			local tlayers="${BASH_REMATCH[2]}"
 			
-			if [[ "$tlayers" =~ t ]]; then
+			if [[ "$tlayers" =~ t ]] || [[ -z "$tlayers" ]]; then
 				allowport "$CHAIN" tcp "$port" "$INTERFACE"
 			fi
 			
