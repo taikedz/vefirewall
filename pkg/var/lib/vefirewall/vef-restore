@@ -1,5 +1,5 @@
 #!/bin/bash
 
-if [[ -f "/etc/vefirewall/savedset" ]]; then
-	vef apply "$(cat /etc/vefirewall/savedset)"
+if [[ -d "/etc/vefirewall/savedset" ]]; then
+	vef apply "/etc/vefirewall/savedset"
 fi
