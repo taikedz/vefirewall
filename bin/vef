@@ -53,6 +53,7 @@ EOF
 }
 
 GLOBALSETS=/etc/vefirewall/sets
+SAVEPATH=/etc/vefirewall/savedset
 
 # --------- General firewall operations --------------
 
@@ -120,11 +121,9 @@ function getset {
 function saveset {
 	local TARGETSET="$(getset "$1")"
 
-	if [[ "${NOSAVE}" != true ]] && [[ "$TARGETSET" != "/etc/vefirewall/savedset" ]]; then
-		rm -rf /etc/vefirewall/savedset || return 1
-		set -x
-		cp "$TARGETSET" -r /etc/vefirewall/savedset || return 2
-		set +x
+	if [[ "${NOSAVE}" != true ]] && [[ "$TARGETSET" != "$SAVEPATH" ]]; then
+		rm -rf "$SAVEPATH" || return 1
+		cp "$TARGETSET" -r "$SAVEPATH" || return 2
 		echo "Set saved."
 	fi
 }
@@ -275,6 +274,13 @@ function needroot {
 
 if [[ -z "$*" ]]; then
 	printhelp
+elif [[ "$1" = restore ]]; then
+	needroot
+	if [[ -d "$SAVEPATH" ]]; then
+		executeset "$SAVEPATH"
+	else
+		echo "vefirewall: No saved set exists"
+	fi
 elif [[ "$1" = apply ]]; then
 	needroot
 	executeset "$2" && saveset "$2"

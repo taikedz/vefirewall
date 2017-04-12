@@ -1,5 +1,5 @@
 #!/bin/bash
 
-if [[ -d "/etc/vefirewall/savedset" ]]; then
-	vef apply "/etc/vefirewall/savedset"
-fi
+# Very simple.
+
+vef restore
