@@ -18,7 +18,7 @@ Installing is very simple:
 	git clone https://github.com/taikedz/vefirewall
 	cd vefirewall
 
-	git checkout v2.1.3
+	git checkout v2.1.4
 
 	sudo ./install
 	sudo systemctl enable vef
