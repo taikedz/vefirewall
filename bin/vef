@@ -306,7 +306,15 @@ elif [[ "$1" = restore ]]; then
 
 elif [[ "$1" = apply ]]; then
 	needroot
-	executeset "$2" && saveset "$2"
+	if [[ -n "$2" ]]; then
+		executeset "$2" && saveset "$2"
+	else
+		"$0" restore
+	fi
+
+elif [[ "$1" = load ]]; then
+	needroot
+	saveset "$2"
 
 elif [[ "$1" = list ]]; then
 	needroot
