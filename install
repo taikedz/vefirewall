@@ -7,12 +7,10 @@ fi
 
 # --- The actual service
 
-umask 022
-
 cp bin/vef /usr/local/bin/vef
-
-# upstream umask may not permit globally executing
 chmod 755 /usr/local/bin/vef
+
+umask 022
 
 mkdir /var/lib/vefirewall -p
 cp {pkg,}/var/lib/vefirewall/vef-restore
