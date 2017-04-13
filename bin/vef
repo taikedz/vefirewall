@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO -- add out own "enable" command
-
 function printhelp {
 cat <<'EOF'
 Very Easy Firewall - vef
@@ -10,25 +8,33 @@ A very basic firewalling script that allows you to manage sets of rule files and
 
 USAGE
 
-	vef list
-
-List sets in the default location
-
-	vef apply SETNAME
-
-SETNAME is the name of a set directory in /etc/vefirewall/sets, or a directory containing set data
-
-	vef restore
-
-Restore the last applied set rules.
+Make vef apply rules at system start or not:
 
 	vef { enable | disable }
 
-Make vef apply rules at start or not
+List sets in the default location:
+
+	vef list
+
+Load a named set:
+
+	vef load SETNAME
+
+Edit the rule file for the currently loaded set:
+
+	vef edit { input | output | forward | rawpre | rawpost }
+
+Save the active set as a named set:
+
+	vef save SETNAME
+
+Load and apply the named set, or aply a previously loaded set:
+
+	vef apply [SETNAME]
 
 ## Sets
 
-Example `input` set file
+Example `input` set rules
 
 	#%POLICY=DROP
 
@@ -48,18 +54,6 @@ By default, the port of the SSH daemon is detected and added to the allowed inco
 Example:
 
 	sudo NOSSH=true vef apply default
-
-## Firewall startup
-
-Enable vef on startup by using:
-
-	sudo systemctl enable vef
-
-Any time you invoke `vef apply`, the newly applied firewall set is saved as the latest set.
-
-To not save the new set, use
-
-	sudo NOSAVE=true vef apply SETNAME
 
 
 EOF
@@ -133,14 +127,35 @@ function getset {
 	fi
 }
 
-function saveset {
+function loadset {
 	local TARGETSET="$(getset "$1")"
 
-	if [[ "${NOSAVE}" != true ]] && [[ "$TARGETSET" != "$SAVEPATH" ]]; then
+	if [[ "$TARGETSET" != "$SAVEPATH" ]]; then
 		rm -rf "$SAVEPATH" || return 1
 		cp "$TARGETSET" -r "$SAVEPATH" || return 2
-		echo "Set saved."
+		echo "Set $1 loaded."
 	fi
+}
+
+function storeset {
+	local SETNAME="$1"
+	local SETPATH="$GLOBALSETS/$SETNAME"
+
+	if [[ -z "$SETNAME" ]]; then
+		echo "Name needed" >&2
+		exit 4
+	fi
+	
+	if [[ "$(basename "$SETNAME")" != "$SETNAME" ]] || [[ "$SETNAME" =~ $(echo '\.|/') ]]; then
+		echo "Invalid set name [$SETNAME]" >&2
+		exit 4
+	fi
+
+	if [[ -d "$SETPATH" ]]; then
+		rm -r "$SETPATH"
+	fi
+
+	cp -r "$SAVEPATH" "$SETPATH"
 }
 
 # ----------- SSH assurance --------------
@@ -298,10 +313,12 @@ function listsets {
 function editset {
 	case "$1" in
 	input|output|forward|rawpre|rawpost)
-		"$EDITOR" "$SAVEPATH/$2"
+		"$EDITOR" "$SAVEPATH/$1"
 		;;
 	*)
 		echo 'Invalid section' >&2
+		echo 'Valid sections are:'
+		echo '  input, output, forward, rawpre, rawpost'
 		exit 3
 		;;
 	esac
@@ -327,10 +344,6 @@ elif [[ "$1" = disable ]]; then
 	needroot
 	systemctl disable vef
 
-elif [[ "$1" = restore ]]; then
-	needroot
-	applyactiveset
-
 elif [[ "$1" = apply ]]; then
 	needroot
 	if [[ -n "$2" ]]; then
@@ -341,6 +354,10 @@ elif [[ "$1" = apply ]]; then
 elif [[ "$1" = load ]]; then
 	needroot
 	loadset "$2"
+
+elif [[ "$1" = save ]]; then
+	needroot
+	storeset "$2"
 
 elif [[ "$1" = edit ]]; then
 	needroot

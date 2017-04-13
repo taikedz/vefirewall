@@ -27,15 +27,30 @@ And you're done.
 
 ## Usage
 
-There are two basic modes to `vef`:
+Make vef apply rules at system start or not:
+
+	vef { enable | disable }
+
+List available rule sets:
 
 	vef list
 
-`list` will simply list the available sets from /etc/vefirewall/sets
+Load a named set:
 
-	vef apply SETNAME
+	vef load SETNAME
 
-SETNAME is the name of a set directory in /etc/vefirewall/sets
+Edit the rule file for the currently loaded set:
+
+	vef edit { input | output | forward | rawpre | rawpost }
+
+Save the active set as a named set:
+
+	vef save SETNAME
+
+Load and apply the named set, or aply a previously loaded set:
+
+	vef apply [SETNAME]
+
 
 ## Sets
 
