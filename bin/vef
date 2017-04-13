@@ -68,6 +68,8 @@ EOF
 GLOBALSETS=/etc/vefirewall/sets
 SAVEPATH=/etc/vefirewall/savedset
 
+: ${EDITOR=nano}
+
 # --------- General firewall operations --------------
 
 function allowestablished {
@@ -156,6 +158,24 @@ function allowssh {
 
 # ---------- Chain rules application --------------
 
+function applyportrule {
+	local INTERFACE="$1"
+	local portdef="$2"
+
+	if [[ "$portdef" =~ $(echo "([0-9]+)([ut]*)") ]]; then
+		local port="${BASH_REMATCH[1]}"
+		local tlayers="${BASH_REMATCH[2]}"
+		
+		if [[ "$tlayers" =~ t ]] || [[ -z "$tlayers" ]]; then
+			allowport "$CHAIN" tcp "$port" "$INTERFACE"
+		fi
+		
+		if [[ "$tlayers" =~ u ]]; then
+			allowport "$CHAIN" udp "$port" "$INTERFACE"
+		fi
+	fi
+}
+
 function applychainrules {
 	local CHAIN="$1"; shift
 	local INTERFACE=
@@ -166,18 +186,7 @@ function applychainrules {
 	fi
 
 	for portdef in "$@"; do
-		if [[ "$portdef" =~ $(echo "([0-9]+)([ut]*)") ]]; then
-			local port="${BASH_REMATCH[1]}"
-			local tlayers="${BASH_REMATCH[2]}"
-			
-			if [[ "$tlayers" =~ t ]] || [[ -z "$tlayers" ]]; then
-				allowport "$CHAIN" tcp "$port" "$INTERFACE"
-			fi
-			
-			if [[ "$tlayers" =~ u ]]; then
-				allowport "$CHAIN" udp "$port" "$INTERFACE"
-			fi
-		fi
+		applyportrule "$INTERFACE" "$portdef"
 	done
 }
 
@@ -267,6 +276,16 @@ function executeset {
 	echo "Done."
 }
 
+function applyactiveset {
+	if [[ -d "$SAVEPATH" ]]; then
+		executeset "$SAVEPATH"
+	else
+		echo "vefirewall: No saved set exists"
+	fi
+}
+
+# --- Set Handling ---
+
 function listsets {
 	local theset=
 	for theset in "$GLOBALSETS"/*; do
@@ -274,6 +293,18 @@ function listsets {
 			echo "${theset##*/}"
 		fi
 	done
+}
+
+function editset {
+	case "$1" in
+	input|output|forward|rawpre|rawpost)
+		"$EDITOR" "$SAVEPATH/$2"
+		;;
+	*)
+		echo 'Invalid section' >&2
+		exit 3
+		;;
+	esac
 }
 
 # --- Main ---
@@ -298,23 +329,22 @@ elif [[ "$1" = disable ]]; then
 
 elif [[ "$1" = restore ]]; then
 	needroot
-	if [[ -d "$SAVEPATH" ]]; then
-		executeset "$SAVEPATH"
-	else
-		echo "vefirewall: No saved set exists"
-	fi
+	applyactiveset
 
 elif [[ "$1" = apply ]]; then
 	needroot
 	if [[ -n "$2" ]]; then
-		executeset "$2" && saveset "$2"
-	else
-		"$0" restore
+		loadset "$2"
 	fi
+	applyactiveset
 
 elif [[ "$1" = load ]]; then
 	needroot
-	saveset "$2"
+	loadset "$2"
+
+elif [[ "$1" = edit ]]; then
+	needroot
+	editset "$2"
 
 elif [[ "$1" = list ]]; then
 	needroot
