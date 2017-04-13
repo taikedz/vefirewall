@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO -- add out own "enable" command
+
 function printhelp {
 cat <<'EOF'
 Very Easy Firewall - vef
@@ -9,9 +11,20 @@ A very basic firewalling script that allows you to manage sets of rule files and
 USAGE
 
 	vef list
+
+List sets in the default location
+
 	vef apply SETNAME
 
-SETNAME is the name of a set directory in /etc/vefirewall/sets
+SETNAME is the name of a set directory in /etc/vefirewall/sets, or a directory containing set data
+
+	vef restore
+
+Restore the last applied set rules.
+
+	vef { enable | disable }
+
+Make vef apply rules at start or not
 
 ## Sets
 
@@ -274,6 +287,15 @@ function needroot {
 
 if [[ -z "$*" ]]; then
 	printhelp
+
+elif [[ "$1" = enable ]]; then
+	needroot
+	systemctl enable vef
+
+elif [[ "$1" = disable ]]; then
+	needroot
+	systemctl disable vef
+
 elif [[ "$1" = restore ]]; then
 	needroot
 	if [[ -d "$SAVEPATH" ]]; then
@@ -281,9 +303,11 @@ elif [[ "$1" = restore ]]; then
 	else
 		echo "vefirewall: No saved set exists"
 	fi
+
 elif [[ "$1" = apply ]]; then
 	needroot
 	executeset "$2" && saveset "$2"
+
 elif [[ "$1" = list ]]; then
 	needroot
 	listsets
