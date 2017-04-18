@@ -35,7 +35,7 @@ To customize your rules, you could then also run
 	sudo vef save myrules
 	sudo vef apply
 
-The editor used is `nano`, if no `$EDITOR` environment vairbale is set.
+The editor used is `nano`, if no `$EDITOR` environment variable is set.
 
 ## Usage
 
@@ -72,9 +72,9 @@ Apply the current set as-is, or load a previously saved set (will squash any uns
 
 The main thing that makes vef so easy is that you can define and save firewall rule sets.
 
-A set is a folder consisting of at least two files, "input" and "output"
+A set is a folder consisting of at least two files, "input" and "output" (and optionally accompanied by "forward", "rawpre" and "rawpost" files too)
 
-Each "input" and "output" file can list any number of port specifications, and allow empty lines and comment lines. Each also spciy the policy for the flow direction. Each line is a list of ports to open up. You can write bunches of ports on a single line, or each on their own, one-by-one, it's all the same.
+Each "input" and "output" file can list any number of port specifications, and allow empty lines and comment lines. Each also specify the policy for the flow direction. Each line is a list of ports to open up. You can write bunches of ports on a single line, or each on their own, one-by-one, it's all the same.
 
 For example, an input file could look like this:
 
@@ -109,7 +109,7 @@ to perform some port forwarding from the host's port 8080 to some internal serve
 
 VEFirewall comes with a few sets pre-configured:
 
-* `basic` which should satisfy a general use-case, locking down incoming ports
+* `basic` which should satisfy a general use-case, locking down incoming ports except DNS query results.
 * `lxc` which sets up the correct forwarding parameters for exposing containers; examples of exposure code are suppliedin the raw files
 * `lockdown` which closes everything except the active SSH port
 * `open-unsafe` which simply opens up the firewall completely
