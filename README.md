@@ -18,18 +18,34 @@ Installing is very simple:
 	git clone https://github.com/taikedz/vefirewall
 	cd vefirewall
 
-	git checkout v2.2
+	git checkout v2.3
 
 	sudo ./install
-	sudo systemctl enable vef
+	sudo vef apply basic
+	sudo vef enable
 
 And you're done.
 
+To customize your rules, you could then also run
+
+	sudo vef edit input
+
+	# ---- Add the ports you need in your editing session ----
+
+	sudo vef save myrules
+	sudo vef apply
+
+The editor used is `nano`, if no `$EDITOR` environment vairbale is set.
+
 ## Usage
 
-Make vef apply rules at system start or not:
+Make vef apply rules at system start or not (you still need to apply a rule set when enabling, or apply `open-unsafe` when disabling):
 
 	vef { enable | disable }
+
+See vef status:
+
+	vef status
 
 List available rule sets:
 
@@ -47,7 +63,7 @@ Save the active set as a named set:
 
 	vef save SETNAME
 
-Load and apply the named set, or aply a previously loaded set:
+Apply the current set as-is, or load a previously saved set (will squash any unsaved modifications!):
 
 	vef apply [SETNAME]
 
@@ -71,13 +87,13 @@ For example, an input file could look like this:
 	%eth2 8080
 
 	# DNS packets
-	53ut
+	53u
 
 Note the opening of port 8080, which is only done for traffic coming in on interface `eth2`.
 
 Note also the DNS port, which expects UDP traffic, denoted by a "u" attached to the end. It is also possible to specify both TCP and UDP on a port:
 
-	5000ut
+	53ut
 
 Another file, "forward" is available to specify the policy for the FORWARD chain. typically, it will only have this content:
 
@@ -94,6 +110,6 @@ to perform some port forwarding from the host's port 8080 to some internal serve
 VEFirewall comes with a few sets pre-configured:
 
 * `basic` which should satisfy a general use-case, locking down incoming ports
-* `lxc` which sets up the correct forwarding parameters for exposing containers; examples of exposure code are in the raw files
+* `lxc` which sets up the correct forwarding parameters for exposing containers; examples of exposure code are suppliedin the raw files
 * `lockdown` which closes everything except the active SSH port
 * `open-unsafe` which simply opens up the firewall completely

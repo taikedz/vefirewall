@@ -34,10 +34,8 @@ Very Easy Firewall is now installed!
 
 Enable auto-restore of rules on startup:
 
-	sudo systemctl enable vef
+	sudo vef enable
 
-Adapt a rule set in /etc/vefirewall/sets and then run
-
-	sudo vef apply RULENAME
+See `vef --help` for more information.
 
 EOF
