@@ -18,7 +18,7 @@ Installing is very simple:
 	git clone https://github.com/taikedz/vefirewall
 	cd vefirewall
 
-	git checkout v2.3
+	git checkout v2.3.1
 
 	sudo ./install
 	sudo vef apply basic
