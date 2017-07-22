@@ -1,6 +1,6 @@
 [Unit]
 
-Description=Very Easy Firewall Restorer
+Description=Very Easy Firewall
 After=network.target
 
 [Service]
