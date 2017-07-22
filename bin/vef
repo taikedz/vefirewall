@@ -61,6 +61,17 @@ EOF
 
 GLOBALSETS=/etc/vefirewall/sets
 SAVEPATH=/etc/vefirewall/savedset
+STATUSFILE=/etc/vefirewall/.status
+
+function create_statusfile {
+	if [[ ! -f "$STATUSFILE" ]]; then
+		if [[ "$UID" != 0 ]]; then
+			return 1
+		fi
+		touch "$STATUSFILE"
+		chmod 644 "$STATUSFILE"
+	fi
+}
 
 : ${EDITOR=nano}
 
@@ -105,7 +116,7 @@ function readreallines {
 	grep -P -v '^(\s*)(#.*)?$' "$TFILE" | sed -r 's/#.*$//'
 }
 
-# ------- Set management -------
+# ------- Set meta management -------
 
 function issetdir {
 	local theset="$1"
@@ -128,12 +139,22 @@ function getset {
 }
 
 function loadset {
-	local TARGETSET="$(getset "$1")"
+	local setname="$1"; shift
+	local TARGETSET="$(getset "$setname")"
+
+	if [[ -z "$TARGETSET" ]]; then
+		echo "Invalid set [$setname]" >&2
+		return 3
+	fi
 
 	if [[ "$TARGETSET" != "$SAVEPATH" ]]; then
 		rm -rf "$SAVEPATH" || return 1
 		cp "$TARGETSET" -r "$SAVEPATH" || return 2
-		echo "Set $1 loaded."
+		echo "Set $setname loaded."
+
+		status_set set "$setname"
+		status_set status loaded
+		status_set applied no
 	fi
 }
 
@@ -152,10 +173,17 @@ function storeset {
 	fi
 
 	if [[ -d "$SETPATH" ]]; then
-		rm -r "$SETPATH"
+		mv "$SETPATH" "$SETPATH+"
 	fi
 
 	cp -r "$SAVEPATH" "$SETPATH"
+
+	if [[ -d "$SETPATH+" ]]; then
+		rm -r "$SETPATH+"
+	fi
+
+	status_set set "$SETNAME"
+	status_set status "loaded"
 }
 
 # ----------- SSH assurance --------------
@@ -254,7 +282,8 @@ function setrawrules {
 	if [[ ! -f "$TFILE" ]]; then return ; fi
 
 	readreallines "$TFILE"|while read inline; do
-		# It SHOULD be safe to just execute this since ";" and "$()" and "|" etc are strings that are not evaluated at this point.
+		# It SHOULD be safe to just execute this since ";" and "$()" and "|" etc
+		# are strings that are not evaluated at this point.
 		iptables $inline
 	done
 }
@@ -282,6 +311,8 @@ function applyset {
 	setrawrules "$SETDIR/rawpost"
 
 	setpolicy FORWARD "$(readpolicy "$SETDIR/forward")"
+
+	status_set applied yes
 }
 
 
@@ -306,6 +337,37 @@ function applyactiveset {
 	fi
 }
 
+# --- Status handling ---
+
+function status_set {
+	local stoken="$1"; shift
+	local sdata="$1"; shift
+
+	# Create setting as empty if eneded
+	if ! grep "$stoken" "$STATUSFILE" -q ; then
+		echo "$stoken = " >> "$STATUSFILE"
+	fi
+
+	sed -r -e "s/^$stoken\\s*=.*/$stoken = $sdata/" -i "$STATUSFILE"
+}
+
+function status_print {
+	echo -e "\nVery Easy Firewall:\n"
+	sed -e 's/^/\t/' "$STATUSFILE"
+}
+
+function status_token_get {
+	local stoken="$1"; shift
+	argcheck "$stoken" setting
+
+	local sdata="$(egrep "^$stoken" "$STATUSFILE")"
+	echo "${stoken#* = }"
+}
+
+function status_squash {
+	echo '' > "$STATUSFILE"
+}
+
 # --- Set Handling ---
 
 function listsets {
@@ -317,21 +379,42 @@ function listsets {
 	done
 }
 
+function doedit {
+	local targetfile="$SAVEPATH/$1"
+	local sum="$(getsum "$targetfile")"
+
+	"$EDITOR" "$targetfile"
+	
+	if [[ "$sum" != "$(getsum "$targetfile")" ]]; then
+		status_set status modified
+		status_set applied no
+	fi
+}
+
+function getsum {
+	md5sum "$1"|cut -d' ' -f1
+}
+
 function editset {
 	case "$1" in
 	input|output|forward|rawpre|rawpost)
-		"$EDITOR" "$SAVEPATH/$1"
+		doedit "$1"
 		;;
 	*)
 		echo 'Invalid section' >&2
-		echo 'Valid sections are:'
-		echo '  input, output, forward, rawpre, rawpost'
+		echo 'Valid sections are:' >&2
+		echo '  input, output, forward, rawpre, rawpost' >&2
 		exit 3
 		;;
 	esac
 }
 
 # --- Main ---
+
+function vef_service {
+	systemctl "$1" vef || return 1
+	status_set service "${1}d"
+}
 
 function needroot {
 	if [[ "$UID" != 0 ]]; then
@@ -345,11 +428,11 @@ if [[ -z "$*" ]]; then
 
 elif [[ "$1" = enable ]]; then
 	needroot
-	systemctl enable vef
+	vef_service enable
 
 elif [[ "$1" = disable ]]; then
 	needroot
-	systemctl disable vef
+	vef_service disable
 
 elif [[ "$1" = apply ]]; then
 	needroot
@@ -373,6 +456,8 @@ elif [[ "$1" = edit ]]; then
 elif [[ "$1" = list ]]; then
 	needroot
 	listsets
+elif [[ "$1" = status ]]; then
+	create_statusfile && status_print
 else
 	echo "Unknown command [$1]" >&2
 fi
