@@ -161,7 +161,14 @@ function storeset {
 # ----------- SSH assurance --------------
 
 function getsshport {
-	egrep '^Port' /etc/ssh/sshd_config |head -n 1|sed -r 's/^Port\s+//'
+	if [[ -f /etc/ssh/sshd_config ]]; then
+		# Support openssh-server
+		egrep '^Port' /etc/ssh/sshd_config |head -n 1|sed -r 's/^Port\s+//'
+
+		# Need to add support for others ?
+	else
+		echo 22
+	fi
 }
 
 function allowssh {
